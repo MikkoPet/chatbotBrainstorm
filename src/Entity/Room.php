@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\RoomRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -11,6 +12,7 @@ use Doctrine\ORM\Mapping\PrePersist;
 
 #[ORM\Entity(repositoryClass: RoomRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[ApiResource()]
 class Room
 {
     #[ORM\Id]
@@ -30,13 +32,16 @@ class Room
     #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'room', orphanRemoval: true)]
     private Collection $messages;
 
-    #[ORM\ManyToOne(inversedBy: 'rooms')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $user = null;
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'rooms')]
+    private Collection $users;
 
     public function __construct()
     {
         $this->messages = new ArrayCollection();
+        $this->users = new ArrayCollection();
     }
 
     #[PrePersist]
@@ -104,14 +109,29 @@ class Room
         return $this;
     }
 
-    public function getUser(): ?User
+    /**
+     * @return Collection<int, User>
+     */
+    public function getUsers(): Collection
     {
-        return $this->user;
+        return $this->users;
     }
 
-    public function setUser(?User $user): static
+    public function addUser(User $user): static
     {
-        $this->user = $user;
+        if (!$this->users->contains($user)) {
+            $this->users->add($user);
+            $user->addRoom($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUser(User $user): static
+    {
+        if ($this->users->removeElement($user)) {
+            $user->removeRoom($this);
+        }
 
         return $this;
     }
