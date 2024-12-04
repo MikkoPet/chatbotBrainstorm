@@ -1,6 +1,9 @@
 parameters:
 
 services:
+    App\EventListener\MessageNotifier:
+        tags:
+            - { name: 'doctrine.event_listener', event: 'postPersist' }
     # default configuration for services in *this* file
     _defaults:
         autowire: true # Automatically injects dependencies in your services.
