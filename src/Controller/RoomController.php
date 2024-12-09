@@ -7,7 +7,9 @@ use App\Entity\Message;
 use App\Form\RoomType;
 use App\Repository\MessageRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -25,15 +27,21 @@ class RoomController extends AbstractController
      */
     #[Route('/room/{id}', name: 'app_room_show')]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function show(Room $room, MessageRepository $messageRepository): Response
+    public function show(Room $room, MessageRepository $messageRepository, JWTTokenManagerInterface $jwtManager): Response
     {
         $messages = $messageRepository->findBy(['room' => $room], ['datetime' => 'ASC']);
 
-        return $this->render('room/show.html.twig', [
+        $response = $this->render('room/show.html.twig', [
             'room'     => $room,
             'messages' => $messages,
         ]);
+
+        $this->setCookie($response, $room->getId(), $jwtManager);
+
+        return $response;
     }
+
+
 
     /**
      * Handles sending a new message in a chat room.
@@ -100,4 +108,27 @@ class RoomController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
+
+    private function setCookie(Response $response, string $roomId, JWTTokenManagerInterface $jwtManager): void
+    {
+        $jwt = $this->generateJwt($roomId, $jwtManager);
+        $response->headers->setCookie(
+            Cookie::create('mercureAuthorization', $jwt)
+                ->withPath('/.well-known/mercure')
+                ->withSecure(true)
+                ->withHttpOnly(true)
+                ->withSameSite('strict')
+        );
+    }
+
+    private function generateJwt(string $roomId, JWTTokenManagerInterface $jwtManager): string
+    {
+        $payload = [
+            'mercure' => ['subscribe' => [sprintf('/room/%s', $roomId)]],
+        ];
+
+        return $jwtManager->createFromPayload($this->getUser(), $payload);
+    }
+
+
 }

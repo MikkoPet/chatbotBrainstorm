@@ -30,7 +30,7 @@
         roomId: {{ room.id }},
         mercureUrl: "{{ mercure(path('app_room_show', {'id': room.id}), { subscribe: 'room/' ~ room.id }) }}",
         sendMessageUrl: "{{ path('app_room_send_message', {'id': room.id}) }}",
-        csrfToken: "{{ csrf_token('chat') }}"
+        csrfToken: "{{ csrf_token('authenticate') }}"
       });
     });
   </script>

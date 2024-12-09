@@ -16,7 +16,7 @@ function initChat(config) {
      * Establishes a connection to the Mercure hub and sets up event listeners.
      */
     function connectToMercure() {
-        eventSource = new EventSource(config.mercureUrl);
+        eventSource = new EventSource(config.mercureUrl, { withCredentials: true });
 
         eventSource.onopen = () => {};
 
