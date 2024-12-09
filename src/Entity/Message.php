@@ -9,15 +9,13 @@ use ApiPlatform\Metadata\Post;
 use App\Repository\MessageRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\PostPersist;
 use Doctrine\ORM\Mapping\PrePersist;
-use Symfony\Component\Mercure\HubInterface;
-use Symfony\Component\Mercure\Update;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
+    mercure: true,
     operations: [
         new Get(),
         new Post(),
