@@ -2,52 +2,32 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
 use App\Repository\MessageRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\PrePersist;
-use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-#[ApiResource(
-    mercure: true,
-    operations: [
-        new Get(),
-        new Post(),
-        new GetCollection()
-    ],
-    normalizationContext: ['groups' => ['message:read']],
-    denormalizationContext: ['groups' => ['message:write']]
-)]
 class Message
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['message:read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['message:read', 'message:write', 'room:read'])]
     private ?string $content = null;
 
     #[ORM\Column]
-    #[Groups(['message:read', 'room:read'])]
     private ?\DateTimeImmutable $datetime = null;
 
     #[ORM\ManyToOne(inversedBy: 'messages')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['message:read', 'message:write'])]
     private ?Room $room = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['message:read', 'message:write', 'room:read'])]
     private ?User $user = null;
 
     #[PrePersist]
