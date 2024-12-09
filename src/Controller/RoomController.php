@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Room;
 use App\Entity\Message;
+use App\Form\RoomType;
 use App\Repository\MessageRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -76,6 +77,27 @@ class RoomController extends AbstractController
             'content'  => $message->getContent(),
             'user'     => $message->getUser()->getEmail(),
             'datetime' => $message->getDatetime()->format('Y-m-d H:i:s'),
+        ]);
+    }
+
+    #[Route('/room/create', name: 'app_room_create', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_MODERATOR')]
+    public function create(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $room = new Room();
+        $form = $this->createForm(RoomType::class, $room);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($room);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Room created successfully.');
+            return $this->redirectToRoute('app_room_show', ['id' => $room->getId()]);
+        }
+
+        return $this->render('room/create.html.twig', [
+            'form' => $form->createView(),
         ]);
     }
 }
