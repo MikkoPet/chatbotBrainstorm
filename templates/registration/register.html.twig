@@ -8,6 +8,8 @@
   {% for flash_error in app.flashes('verify_email_error') %}
     <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
   {% endfor %}
+  <section class="white">
+   <div class="purple">
 
   <h1>Register</h1>
 
@@ -16,6 +18,9 @@
   {{ form_row(registrationForm.email) }}
   {{ form_row(registrationForm.plainPassword, { label: 'Password' }) }}
 
-  <button type="submit" class="btn">Register</button>
+  <button type="submit" class="black">Register</button>
   {{ form_end(registrationForm) }}
+   </div>
+  </section>
+
 {% endblock %}
