@@ -6,11 +6,13 @@ use App\Entity\Room;
 use App\Entity\Message;
 use App\Form\RoomType;
 use App\Repository\MessageRepository;
+use CoopTilleuls\UrlSignerBundle\UrlSigner\UrlSignerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -24,12 +26,14 @@ use Symfony\Component\Mercure\Update;
 class RoomController extends AbstractController
 {
     private $logger;
+    private $urlSigner;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger, UrlSignerInterface $urlSigner)
     {
         $this->logger = $logger;
+        $this->urlSigner = $urlSigner;
     }
-    
+
     /**
      * Displays a specific chat room and its messages.
      */
@@ -77,8 +81,8 @@ class RoomController extends AbstractController
         $messageData = [
             'id'       => $message->getId(),
             'content'  => $message->getContent(),
-            'user'     => $message->getUser()->getEmail(),
-            'datetime' => $message->getDatetime()->format('Y-m-d H:i:s'),
+            'user'     => $message->getUser()->getUsername(),
+            'datetime' => $message->getDatetime()->format('d-m-Y H:i'),
         ];
         // Send a real-time update to subscribed clients.
         $topic  = sprintf('room/%d', $room->getId());
@@ -95,7 +99,7 @@ class RoomController extends AbstractController
         return $this->json([
             'id'       => $message->getId(),
             'content'  => $message->getContent(),
-            'user'     => $message->getUser()->getEmail(),
+            'user'     => $message->getUser()->getUsername(),
             'datetime' => $message->getDatetime()->format('Y-m-d H:i:s'),
         ]);
     }
@@ -123,4 +127,39 @@ class RoomController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
+
+    /**
+     * Handles adding a user to a specific chat room via signed invite link.
+     */
+    #[Route('/room/invite/{id}', name: 'app_room_invite', methods: ['GET'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function invite(Room $room, EntityManagerInterface $entityManager): RedirectResponse
+    {
+        $user = $this->getUser();
+        $room->addUser($user);
+        $entityManager->flush();
+        // Redirect to the room after successful invite
+        return $this->redirectToRoute('app_room_show', ['id' => $room->getId()]);
+    }
+
+    /**
+     * Handles generating and returning a signed invite link for a specific chat room.
+     */
+    #[Route('/room/{id}/generate', name: 'app_room_generate', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function generateInviteLink(Room $room): JsonResponse
+    {
+        $this->logger->info('Generating invite link for room {room}', ['room' => $room->getId()]);
+        try {
+            $url = $this->generateUrl('app_room_invite', ['id' => $room->getId()], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL);
+            $expiration = (new \DateTime('now'))->add(new \DateInterval('P1D'));
+            $signedUrl = $this->urlSigner->sign($url, $expiration);
+
+            return $this->json(['inviteLink' => $signedUrl]);
+        } catch (\Exception $e) {
+            $this->logger->error('Error generating invite link: ' . $e->getMessage());
+            return $this->json(['error' => 'An error occurred while generating the invite link'], 500);
+        }
+    }
+
 }

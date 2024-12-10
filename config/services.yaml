@@ -9,6 +9,9 @@ services:
         arguments: ["@request_stack"]
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJWTCreated }
+    App\Controller\RoomController:
+        arguments:
+            $urlSigner: '@url_signer.signer'
 
     Symfony\Component\Mercure\HubInterface: "@mercure.hub.default"
     # default configuration for services in *this* file
