@@ -3,6 +3,8 @@
 {% block title %}Log in!{% endblock %}
 
 {% block body %}
+        <section class="white">
+            <div class="purple">
     <form method="post">
         {% if error %}
             <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
@@ -15,10 +17,15 @@
         {% endif %}
 
         <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-        <label for="username">Email</label>
-        <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control" autocomplete="email" required autofocus>
-        <label for="password">Password</label>
-        <input type="password" name="_password" id="password" class="form-control" autocomplete="current-password" required>
+        <div class="input-field white">
+        <label for="username" class="bold">Email</label>
+        <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control field-text" autocomplete="email" required autofocus>
+        </div>
+
+        <div class="input-field white">
+        <label for="password" class="bold">Password</label>
+        <input type="password" name="_password" id="password" class="form-control field-text" autocomplete="current-password" required>
+        </div>
 
         <input type="hidden" name="_csrf_token"
                value="{{ csrf_token('authenticate') }}"
@@ -34,8 +41,10 @@
             </div>
         #}
 
-        <button class="btn btn-lg btn-primary" type="submit">
+        <button class="green" type="submit">
             Sign in
         </button>
     </form>
+                </div>
+            </section>
 {% endblock %}

@@ -5,20 +5,31 @@
 {% endblock %}
 
 {% block body %}
-  <h1>{{ room.title }}</h1>
-  <div id="chat-messages">
-    {% for message in messages %}
-      <div class="message">
-        <strong>{{ message.user.email }}</strong>
-        <span>{{ message.datetime|date('Y-m-d H:i:s') }}</span>
-        <p>{{ message.content }}</p>
-      </div>
-    {% endfor %}
+<section class="chat-section">
+  <div>
+    <h1>{{ room.title }}</h1>
+    <div id="chat-messages" class="chat-area">
+      {% for message in messages %}
+        <div class="message">
+          <strong>{{ message.user.email }}</strong>
+          <span class="input-field">{{ message.datetime|date('Y-m-d H:i:s') }}</span>
+          <p class={{ message.user.email ? 'message user purple' : 'message bot white' }}">{{ message.content }}</p>
+        </div>
+      {% endfor %}
+    </div>
+
+    <section class="type-area" id="type-area">
+      <form id="message-form">
+        <textarea class="input-field white field-text" type="text" id="message-input" required />
+        <input class="black bold" value="^" type="submit" />
+
+        <button class="green bold"> Recap </button>
+        <button class="red bold"> Critique </button>
+        <button class="yellow bold"> Propal </button>
+      </form>
+    </section>
   </div>
-  <form id="message-form">
-    <input type="text" id="message-input" required />
-    <button type="submit">Send</button>
-  </form>
+</section>
 {% endblock %}
 
 {% block javascripts %}

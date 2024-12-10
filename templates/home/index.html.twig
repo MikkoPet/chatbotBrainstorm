@@ -5,14 +5,16 @@
 {% endblock %}
 
 {% block body %}
+  <section class="purple screen">
+  <div>
   <h1>Welcome, {{ user.username }}!</h1>
 
   <h2>Your Rooms:</h2>
   {% if (rooms|length) > 0 %}
-    <ul>
+    <ul class="table">
       {% for room in rooms %}
-        <li>
-          <a href="{{ path('app_room_show', { id: room.id }) }}">{{ room.title }}</a>
+        <li class="item">
+          <a href="{{ path('app_room_show', { id: room.id }) }}" class="white">{{ room.title }}</a>
         </li>
       {% endfor %}
     </ul>
@@ -20,5 +22,8 @@
     <p>You are not a member of any rooms yet.</p>
   {% endif %}
 
-  <a href="{{ path('app_logout') }}">Logout</a>
+  <a href="{{ path('app_logout') }}" class="red">Logout</a>
+  </div>
+  </section>
+
 {% endblock %}
