@@ -1,14 +1,17 @@
 parameters:
+    app.groq_api_key: '%env(GROQ_API_KEY)%'
 
 services:
     App\EventListener\MessageNotifier:
         tags:
             - { name: "doctrine.event_listener", event: "postPersist" }
+    
     acme_api.event.jwt_created_listener:
         class: App\EventListener\JWTCreatedListener
         arguments: ["@request_stack"]
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJWTCreated }
+    
     App\Controller\RoomController:
         arguments:
             $urlSigner: '@url_signer.signer'
@@ -27,3 +30,7 @@ services:
             - "../src/DependencyInjection/"
             - "../src/Entity/"
             - "../src/Kernel.php"
+
+    App\Service\GroqApiService:
+        arguments:
+            $apiKey: '%app.groq_api_key%'

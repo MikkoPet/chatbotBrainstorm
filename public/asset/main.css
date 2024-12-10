@@ -12,6 +12,12 @@ code {
     monospace;
 }
 
+button:disabled {
+  background-color: #cccccc;
+  color: #4B2980;
+  cursor: not-allowed;
+}
+
 button,
 input,
 textarea,

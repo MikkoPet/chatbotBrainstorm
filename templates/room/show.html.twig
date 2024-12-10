@@ -7,10 +7,9 @@
 {% block body %}
   <section class="chat-section">
     <div>
-  
-    <a href="{{ path('app_home') }}" class="purple bold"> &#60; </a>
+      <a href="{{ path('app_home') }}" class="purple bold">&#60;</a>
 
-    <h1>{{ room.title }}</h1>
+      <h1>{{ room.title }}</h1>
       <button id="invite" class="green bold">Ajoute un camarade</button>
       <div id="chat-messages" class="chat-area">
         {% for message in messages %}
@@ -22,26 +21,24 @@
         {% endfor %}
       </div>
 
-    <section class="type-area" id="type-area">
-      <form id="message-form">
-        <input class="input-field white field-text" type="text" id="message-input" required />
-        <input class="bold" value="Envoyer" type="submit" />
-
-      </form>
-        <button class="green bold"> Recap </button>
-        <button class="red bold"> Critique </button>
-        <button class="yellow bold"> Propal </button>
-        <button class="black bold"> Prompt </button>
-
-    </section>
-  </div>
-</section>
+      <section class="type-area" id="type-area">
+        <form id="message-form">
+          <input class="input-field white field-text" type="text" id="message-input" required />
+          <input class="bold" value="Envoyer" type="submit" />
+        </form>
+        <button class="green bold" disabled>Recap</button>
+        <button class="red bold" disabled>Critique</button>
+        <button class="yellow bold" disabled>Propal</button>
+        <button id="prompt-button" class="black bold">Prompt</button>
+      </section>
+    </div>
+  </section>
 {% endblock %}
-
 {% block javascripts %}
   {{ parent() }}
   <script src="{{ asset('js/chat.js') }}" defer></script>
   <script src="{{ asset('js/invite.js') }}" defer></script>
+  <script src="{{ asset('js/groq.js') }}" defer></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       // Initialize chat
@@ -61,6 +58,12 @@
             csrfToken: "{{ csrf_token('authenticate') }}"
           });
         });
-    });
+
+      // Initialize Groq functionality
+      initGroq({
+        groqPromptUrl: "{{ path('app_groq_prompt') }}",
+        csrfToken: "{{ csrf_token('authenticate') }}"
+        });
+      });
   </script>
 {% endblock %}

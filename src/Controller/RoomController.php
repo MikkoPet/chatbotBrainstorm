@@ -8,7 +8,6 @@ use App\Form\RoomType;
 use App\Repository\MessageRepository;
 use CoopTilleuls\UrlSignerBundle\UrlSigner\UrlSignerInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -39,7 +38,7 @@ class RoomController extends AbstractController
      */
     #[Route('/room/{id}', name: 'app_room_show')]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function show(Room $room, MessageRepository $messageRepository, JWTTokenManagerInterface $jwtManager, HubInterface $hub): Response
+    public function show(Room $room, MessageRepository $messageRepository, HubInterface $hub): Response
     {
         $messages = $messageRepository->findBy(['room' => $room], ['datetime' => 'ASC']);
 
