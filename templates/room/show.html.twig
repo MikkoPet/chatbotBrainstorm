@@ -7,6 +7,9 @@
 {% block body %}
 <section class="chat-section">
   <div>
+
+    <a href="{{ path('app_home') }}" class="purple bold"> &#60; </a>
+
     <h1>{{ room.title }}</h1>
     <div id="chat-messages" class="chat-area">
       {% for message in messages %}
