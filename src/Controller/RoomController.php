@@ -8,6 +8,7 @@ use App\Form\RoomType;
 use App\Repository\MessageRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,26 +23,31 @@ use Symfony\Component\Mercure\Update;
  */
 class RoomController extends AbstractController
 {
+    private $logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+    
     /**
      * Displays a specific chat room and its messages.
      */
     #[Route('/room/{id}', name: 'app_room_show')]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function show(Room $room, MessageRepository $messageRepository, JWTTokenManagerInterface $jwtManager): Response
+    public function show(Room $room, MessageRepository $messageRepository, JWTTokenManagerInterface $jwtManager, HubInterface $hub): Response
     {
         $messages = $messageRepository->findBy(['room' => $room], ['datetime' => 'ASC']);
 
         $response = $this->render('room/show.html.twig', [
-            'room'     => $room,
-            'messages' => $messages,
+            'room'          => $room,
+            'messages'      => $messages,
+            'mercureHubUrl' => $hub->getPublicUrl(),
+            'roomTopic'     => sprintf('room/%d', $room->getId()),
         ]);
-
-        $this->setCookie($response, $room->getId(), $jwtManager);
 
         return $response;
     }
-
-
 
     /**
      * Handles sending a new message in a chat room.
@@ -67,18 +73,24 @@ class RoomController extends AbstractController
         $entityManager->persist($message);
         $entityManager->flush();
 
+        // Prepare the message data
+        $messageData = [
+            'id'       => $message->getId(),
+            'content'  => $message->getContent(),
+            'user'     => $message->getUser()->getEmail(),
+            'datetime' => $message->getDatetime()->format('Y-m-d H:i:s'),
+        ];
         // Send a real-time update to subscribed clients.
+        $topic  = sprintf('room/%d', $room->getId());
         $update = new Update(
-            sprintf('/room/%d', $room->getId()),
-            json_encode([
-                'id'       => $message->getId(),
-                'content'  => $message->getContent(),
-                'user'     => $message->getUser()->getEmail(),
-                'datetime' => $message->getDatetime()->format('Y-m-d H:i:s'),
-            ])
+            $topic,
+            json_encode($messageData)
         );
 
         $hub->publish($update);
+
+        // Log the Mercure update
+        $this->logger->info('Mercure update: Sent message to topic "{topic}"', ['topic' => $topic]);
 
         return $this->json([
             'id'       => $message->getId(),
@@ -88,6 +100,9 @@ class RoomController extends AbstractController
         ]);
     }
 
+    /**
+     * Displays a form to create a new chat room.
+     */
     #[Route('/room/create', name: 'app_room_create', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_MODERATOR')]
     public function create(Request $request, EntityManagerInterface $entityManager): Response
@@ -108,27 +123,4 @@ class RoomController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-
-    private function setCookie(Response $response, string $roomId, JWTTokenManagerInterface $jwtManager): void
-    {
-        $jwt = $this->generateJwt($roomId, $jwtManager);
-        $response->headers->setCookie(
-            Cookie::create('mercureAuthorization', $jwt)
-                ->withPath('/.well-known/mercure')
-                ->withSecure(true)
-                ->withHttpOnly(true)
-                ->withSameSite('strict')
-        );
-    }
-
-    private function generateJwt(string $roomId, JWTTokenManagerInterface $jwtManager): string
-    {
-        $payload = [
-            'mercure' => ['subscribe' => [sprintf('/room/%s', $roomId)]],
-        ];
-
-        return $jwtManager->createFromPayload($this->getUser(), $payload);
-    }
-
-
 }

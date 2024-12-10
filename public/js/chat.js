@@ -1,7 +1,7 @@
 /**
  * Initializes the chat functionality.
  * @param {Object} config - Configuration object containing necessary URLs and tokens.
- * @param {string} config.mercureUrl - URL for the Mercure hub.
+ * @param {string} config.mercureHubUrl - URL for the Mercure hub.
  * @param {string} config.sendMessageUrl - URL for sending messages.
  * @param {string} config.csrfToken - CSRF token for secure message sending.
  */
@@ -13,34 +13,41 @@ function initChat(config) {
     let eventSource;
 
     /**
-     * Establishes a connection to the Mercure hub and sets up event listeners.
+     * Handles the mercure connection and event handling.
      */
     function connectToMercure() {
-        eventSource = new EventSource(config.mercureUrl, { withCredentials: true });
+        const url = new URL(config.mercureHubUrl);
+        url.searchParams.append('topic', 'room/' + config.roomId);
 
-        eventSource.onopen = () => {};
+        eventSource = new EventSource(url, { withCredentials: true });
 
+        eventSource.onopen = () => {
+            console.log("Mercure connection opened");
+        };
+
+        // Handle incoming messages from the server
         eventSource.onmessage = (event) => {
+            console.log("Received Mercure event:", event);
             try {
                 const message = JSON.parse(event.data);
                 addMessageToChat(message);
             } catch (error) {
-                // Error handling for message parsing
+                console.error("Error parsing Mercure message:", error);
             }
         };
 
-        eventSource.onerror = () => {
+        // Handle connection errors and reconnection attempts
+        eventSource.onerror = (error) => {
+            console.error("Mercure connection error:", error);
             eventSource.close();
+            console.log("Attempting to reconnect in 5 seconds...");
             setTimeout(connectToMercure, 5000);
         };
     }
 
     /**
-     * Adds a new message to the chat display.
-     * @param {Object} message - The message object to be added.
-     * @param {string} message.user - The username of the message sender.
-     * @param {string} message.datetime - The timestamp of the message.
-     * @param {string} message.content - The content of the message.
+     * Adds a message received from mercure to the chat display.
+     * @param {string} message - The message to be added to the chat. 
      */
     function addMessageToChat(message) {
         const messageElement = document.createElement("div");
@@ -54,10 +61,11 @@ function initChat(config) {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    // Initialize the Mercure connection
     connectToMercure();
 
-    // Set up the message form submission handler
+    /**
+     * Submits a new message to the server.
+     */
     messageForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const content = messageInput.value.trim();
@@ -79,11 +87,9 @@ function initChat(config) {
                 throw new Error(errorData.error || "Failed to send message");
             }
 
-            await response.json();
             messageInput.value = "";
         } catch (error) {
-            console.log("Error sending message:", error);
-            
+            console.error("Error sending message:", error);
         }
     });
 }

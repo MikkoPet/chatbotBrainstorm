@@ -7,7 +7,7 @@ services:
       MERCURE_PUBLISHER_JWT_KEY: '${MERCURE_JWT_SECRET}'
       MERCURE_SUBSCRIBER_JWT_KEY: '${MERCURE_JWT_SECRET}'
       MERCURE_EXTRA_DIRECTIVES: |
-        cors_origins *
+        cors_origins http://127.0.0.1:8000
         anonymous
     ports:
       - "3000:80"
