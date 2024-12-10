@@ -184,9 +184,9 @@ label {
   width: 100%;
 }
 
-chat-section,
-chat-section>div {
-    margin-top: 15px;
+.chat-section,
+.chat-section>div {
+    margin-top: 0;
     margin-bottom: 0;
     padding-bottom: 0;
 }
@@ -241,7 +241,8 @@ chat-section>div {
     gap: 5px;
 }
 
-.type-area form textarea {
+.type-area form input:first-child {
+  width: 75%;
     padding-left: 5px;
     flex: 1;
 }

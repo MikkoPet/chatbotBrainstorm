@@ -11,22 +11,22 @@
     <div id="chat-messages" class="chat-area">
       {% for message in messages %}
         <div class="message">
-          <strong>{{ message.user.email }}</strong>
-          <span class="input-field">{{ message.datetime|date('Y-m-d H:i:s') }}</span>
-          <p class={{ message.user.email ? 'message user purple' : 'message bot white' }}">{{ message.content }}</p>
+          <strong>{{ message.user.username }}</strong>
+          <span class="input-field">{{ message.datetime|date('d-m-Y H:i') }}</span>
+          <div class="purple">{{ message.content }}</div>
         </div>
       {% endfor %}
     </div>
 
     <section class="type-area" id="type-area">
       <form id="message-form">
-        <textarea class="input-field white field-text" type="text" id="message-input" required />
-        <input class="black bold" value="^" type="submit" />
+        <input class="input-field white field-text" type="text" id="message-input" required />
+        <input class="bold" value="Envoyer" type="submit" />
 
+      </form>
         <button class="green bold"> Recap </button>
         <button class="red bold"> Critique </button>
         <button class="yellow bold"> Propal </button>
-      </form>
     </section>
   </div>
 </section>
