@@ -19,8 +19,18 @@ class AppFixtures extends Fixture
     }
 
     public function load(ObjectManager $manager): void
-    { // Create 10 users
-        $users = [];
+    {
+        // Add a moderator
+        $moderator = new User();
+        $moderator->setUsername("moderator");
+        $moderator->setEmail("moderator@example.com");
+        $moderator->setPassword($this->passwordHasher->hashPassword($moderator, "moderator"));
+        $moderator->setRoles(['ROLE_MODERATOR']);
+        $manager->persist($moderator);
+
+        $users[] = $moderator;
+
+        // Create 10 users
         for ($i = 1; $i <= 10; $i++) {
             $user = new User();
             $user->setUsername("user$i");
@@ -29,6 +39,9 @@ class AppFixtures extends Fixture
             $users[] = $user;
             $manager->persist($user);
         }
+
+
+
 
         // Create 5 rooms
         $rooms = [];

@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Chat Room: {{ room.title }}
+{% endblock %}
+
+{% block body %}
+  <h1>{{ room.title }}</h1>
+  <div id="chat-messages">
+    {% for message in messages %}
+      <div class="message">
+        <strong>{{ message.user.email }}</strong>
+        <span>{{ message.datetime|date('Y-m-d H:i:s') }}</span>
+        <p>{{ message.content }}</p>
+      </div>
+    {% endfor %}
+  </div>
+  <form id="message-form">
+    <input type="text" id="message-input" required />
+    <button type="submit">Send</button>
+  </form>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script src="{{ asset('js/chat.js') }}" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      initChat({
+        roomId: {{ room.id }},
+        mercureHubUrl: "{{ mercureHubUrl }}",
+        roomTopic: "{{ roomTopic }}",
+        sendMessageUrl: "{{ path('app_room_send_message', {'id': room.id}) }}",
+        csrfToken: "{{ csrf_token('authenticate') }}"
+      });
+    });
+  </script>
+{% endblock %}

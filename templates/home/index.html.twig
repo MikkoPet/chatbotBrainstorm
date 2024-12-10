@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Home
+{% endblock %}
+
+{% block body %}
+  <h1>Welcome, {{ user.username }}!</h1>
+
+  <h2>Your Rooms:</h2>
+  {% if (rooms|length) > 0 %}
+    <ul>
+      {% for room in rooms %}
+        <li>
+          <a href="{{ path('app_room_show', { id: room.id }) }}">{{ room.title }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>You are not a member of any rooms yet.</p>
+  {% endif %}
+
+  <a href="{{ path('app_logout') }}">Logout</a>
+{% endblock %}
