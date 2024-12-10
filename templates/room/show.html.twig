@@ -5,21 +5,22 @@
 {% endblock %}
 
 {% block body %}
-<section class="chat-section">
-  <div>
-
+  <section class="chat-section">
+    <div>
+  
     <a href="{{ path('app_home') }}" class="purple bold"> &#60; </a>
 
     <h1>{{ room.title }}</h1>
-    <div id="chat-messages" class="chat-area">
-      {% for message in messages %}
-        <div class="message">
-          <strong>{{ message.user.username }}</strong>
-          <span class="input-field">{{ message.datetime|date('d-m-Y H:i') }}</span>
-          <div class="purple">{{ message.content }}</div>
-        </div>
-      {% endfor %}
-    </div>
+      <button id="invite" class="green bold">Ajoute un camarade</button>
+      <div id="chat-messages" class="chat-area">
+        {% for message in messages %}
+          <div class="message">
+            <strong>{{ message.user.username }}</strong>
+            <span class="input-field">{{ message.datetime|date('d-m-Y H:i') }}</span>
+            <div class="purple">{{ message.content }}</div>
+          </div>
+        {% endfor %}
+      </div>
 
     <section class="type-area" id="type-area">
       <form id="message-form">
@@ -40,8 +41,10 @@
 {% block javascripts %}
   {{ parent() }}
   <script src="{{ asset('js/chat.js') }}" defer></script>
+  <script src="{{ asset('js/invite.js') }}" defer></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      // Initialize chat
       initChat({
         roomId: {{ room.id }},
         mercureHubUrl: "{{ mercureHubUrl }}",
@@ -49,6 +52,15 @@
         sendMessageUrl: "{{ path('app_room_send_message', {'id': room.id}) }}",
         csrfToken: "{{ csrf_token('authenticate') }}"
       });
+
+      // Add a listener to the invite button
+      const inviteButton = document.getElementById('invite');
+        inviteButton.addEventListener('click', function() {
+          invite({
+            roomId: {{ room.id }},
+            csrfToken: "{{ csrf_token('authenticate') }}"
+          });
+        });
     });
   </script>
 {% endblock %}
