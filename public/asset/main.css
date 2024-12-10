@@ -275,3 +275,10 @@ section button:last-child {
 .item a:last-child {
   width: 40px;
 }
+
+button#invite {
+  position: absolute;
+  top: 2%;
+  right: 2%;
+  margin-bottom: 12px;
+}

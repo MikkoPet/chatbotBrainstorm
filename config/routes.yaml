@@ -7,3 +7,9 @@ controllers:
 api_login_check:
     path: /api/login
     methods: ['POST']
+
+room_invite:
+    path: /room/invite/{id}
+    controller: App\Controller\RoomController::invite
+    defaults:
+        _signed: true

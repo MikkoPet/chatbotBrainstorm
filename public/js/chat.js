@@ -17,7 +17,7 @@ function initChat(config) {
      */
     function connectToMercure() {
         const url = new URL(config.mercureHubUrl);
-        url.searchParams.append('topic', 'room/' + config.roomId);
+        url.searchParams.append("topic", "room/" + config.roomId);
 
         eventSource = new EventSource(url, { withCredentials: true });
 
@@ -47,16 +47,27 @@ function initChat(config) {
 
     /**
      * Adds a message received from mercure to the chat display.
-     * @param {string} message - The message to be added to the chat. 
+     * @param {string} message - The message to be added to the chat.
      */
     function addMessageToChat(message) {
         const messageElement = document.createElement("div");
         messageElement.classList.add("message");
-        messageElement.innerHTML = `
-            <strong>${message.user}</strong>
-            <span>${message.datetime}</span>
-            <p>${message.content}</p>
-        `;
+
+        const userElement = document.createElement("strong");
+        userElement.textContent = message.user;
+
+        const datetimeElement = document.createElement("span");
+        datetimeElement.classList.add("input-field");
+        datetimeElement.textContent = message.datetime;
+
+        const contentElement = document.createElement("div");
+        contentElement.classList.add("purple");
+        contentElement.textContent = message.content;
+
+        messageElement.appendChild(userElement);
+        messageElement.appendChild(datetimeElement);
+        messageElement.appendChild(contentElement);
+
         chatMessages.appendChild(messageElement);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
